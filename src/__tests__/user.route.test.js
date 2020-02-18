@@ -36,7 +36,8 @@ describe("/user/:username", () => {
         password: "i4mDVeryBest",
         workouts: [
           {
-            duration: "15",
+            id: 1,
+            duration: 15,
             focus: "upper body",
             exercises: ["pushups", "planks", "superman", "pull ups"],
             isCompleted: true
@@ -62,34 +63,62 @@ describe("/user/:username", () => {
   it("GET / should return all users", async () => {
     const expectedResponse = [
       {
+        username: "warrior123",
+        workouts: []
+      },
+      {
         username: "knight567",
         workouts: [
           {
-            duration: "15",
+            id: 1,
+            duration: 15,
             focus: "upper body",
             exercises: ["pushups", "planks", "superman", "pull ups"]
           }
         ]
-      },
-      {
-        username: "warrior123",
-        workouts: []
       }
     ];
     const { body: response } = await request(app)
       .get("/user")
       .expect(200);
-    response.sort((a, b) => a.id > b.id);
+    //response.sort((a, b) => a.id > b.id);
     expect(response).toEqual(expectedResponse);
   });
-  // it("GET / should return username and past workouts", async () => {
-  //   const expectedResponse = {
-  //     username: "warrior123",
-  //     workouts: []
-  //   };
-  //   const { body: response } = await request(app)
-  //     .get(`/user/warrior123`)
-  //     .expect(200);
-  //   expect(response).toMatchObject(expectedResponse);
-  // });
+
+  it("GET / should return username 'warrior123' and empty workout array", async () => {
+    const expectedResponse = {
+      username: "warrior123",
+      workouts: []
+    };
+    const { body: response } = await request(app)
+      .get(`/user/${expectedResponse.username}`)
+      .expect(200);
+    expect(response.workouts).toStrictEqual(expect.anything());
+    expect(response).toMatchObject(expectedResponse);
+    //   jwt.verify.mockReturnValueOnce({ name: expectedUser.username });
+    // const { body: user } = await request(app)
+    //   .get(`/user/${expectedUser.username}`)
+    //   .set("Cookie", "token=valid-token")
+    //   .expect(200);
+    // expect(jwt.verify).toHaveBeenCalledTimes(1);
+    // expect(user[0]).toMatchObject(expectedUser);
+  });
+
+  it("GET / should return user's past workouts only", async () => {
+    const targetUser = "knight567";
+    const expectedResponse = {
+      workouts: [
+        {
+          id: 1,
+          duration: 15,
+          focus: "upper body",
+          exercises: ["pushups", "planks", "superman", "pull ups"]
+        }
+      ]
+    };
+    const { body: response } = await request(app)
+      .get(`/user/${targetUser}/pastworkouts`)
+      .expect(200);
+    expect(response).toMatchObject(expectedResponse);
+  });
 });
