@@ -2,10 +2,11 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
 const workoutSchema = new mongoose.Schema({
-  duration: String,
+  id: Number,
+  duration: Number,
   focus: String,
   exercises: Array,
-  completed: Boolean
+  isCompleted: Boolean
 });
 
 const userSchema = new mongoose.Schema({
