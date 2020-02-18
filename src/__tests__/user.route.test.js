@@ -95,13 +95,6 @@ describe("/user/:username", () => {
       .expect(200);
     expect(response.workouts).toStrictEqual(expect.anything());
     expect(response).toMatchObject(expectedResponse);
-    //   jwt.verify.mockReturnValueOnce({ name: expectedUser.username });
-    // const { body: user } = await request(app)
-    //   .get(`/user/${expectedUser.username}`)
-    //   .set("Cookie", "token=valid-token")
-    //   .expect(200);
-    // expect(jwt.verify).toHaveBeenCalledTimes(1);
-    // expect(user[0]).toMatchObject(expectedUser);
   });
 
   it("GET / should return user's past workouts only", async () => {
@@ -118,6 +111,48 @@ describe("/user/:username", () => {
     };
     const { body: response } = await request(app)
       .get(`/user/${targetUser}/pastworkouts`)
+      .expect(200);
+    expect(response).toMatchObject(expectedResponse);
+  });
+
+  it("GET / should return user's past workout of id 1", async () => {
+    const targetUser = "knight567";
+    const expectedResponse = {
+      id: 1,
+      duration: 15,
+      focus: "upper body",
+      exercises: ["pushups", "planks", "superman", "pull ups"]
+    };
+    const { body: response } = await request(app)
+      .get(`/user/${targetUser}/pastworkouts/${expectedResponse.id}`)
+      .expect(200);
+    expect(response).toMatchObject(expectedResponse);
+  });
+
+  it("GET / should return error message when there is no workout", async () => {
+    const targetUser = "warrior123";
+    const targetId = 1;
+    const expectedResponse = { error: "Workout not found" };
+    //const expectedResponse = `${targetUser} has no such workout!`;
+    const { body: response } = await request(app)
+      .get(`/user/${targetUser}/pastworkouts/${targetId}`)
+      .expect(400);
+    expect(response).toMatchObject(expectedResponse);
+  });
+
+  it("DELETE / should return workout that has been deleted", async () => {
+    const targetUser = "knight567";
+    const targetId = 1;
+    const expectedResponse = {
+      id: 1,
+      duration: 15,
+      focus: "upper body",
+      exercises: ["pushups", "planks", "superman", "pull ups"]
+    };
+    jwt.verify.mockReturnValueOnce({ username: { targetUser } });
+    const { body: response } = await request(app)
+      .get(`/user/${targetUser}/pastworkouts/${targetId}`)
+      .set("Cookie", "token=valid-token")
       .expect(200);
     expect(response).toMatchObject(expectedResponse);
   });
