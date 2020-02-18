@@ -54,14 +54,14 @@ app.post("/login", async (req, res, next) => {
     };
     //const result = await bcrypt.compare(password, user.password);
 
-    console.log("hi");
+    //console.log("hi");
 
     // if (!result) {
     //   throw new Error("Login Failed");
     // }
 
     const token = createJWT(user.username);
-    console.log("token 2 is", token);
+    //console.log("token 2 is", token);
 
     const oneDay = 24 * 60 * 60 * 1000;
     const oneWeek = oneDay * 7;
