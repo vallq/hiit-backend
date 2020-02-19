@@ -2,11 +2,10 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/user.model");
 const { protectRoute } = require("../middleware/auth");
-const { removeId } = require("../utils/helperFunctions");
+const { removeId, wrapAsync } = require("../utils/helperFunctions");
 const WORKOUTS_FIELD = "workouts";
 const returnWorkoutsOnly = `-__v -_id -username -password -${WORKOUTS_FIELD}._id -${WORKOUTS_FIELD}.isCompleted`;
 const returnUsersOnly = `-__v -_id -password -${WORKOUTS_FIELD}._id -${WORKOUTS_FIELD}.isCompleted`;
-const returnTargetUserAndWorkouts = "-__v -_id -password";
 
 router.get("/", async (req, res) => {
   const users = await User.find({}, returnUsersOnly);
@@ -67,25 +66,22 @@ router.get("/:username/pastworkouts/:id", async (req, res, next) => {
     const expectedUserWorkout = userWorkouts.workouts[0];
     res.status(200).send(expectedUserWorkout);
   } catch (err) {
-    if (err.message === "Workout not found") {
-      err.statusCode = 400;
-    }
+    err.statusCode = 400;
+    err.message = "Workout not found";
     next(err);
   }
 });
 
-router.post("/", async (req, res, next) => {
-  try {
+router.post(
+  "/",
+  wrapAsync(async (req, res, next) => {
     const userData = req.body;
     const createNewUser = new User(userData);
     await User.init();
     const newUser = await createNewUser.save();
     res.status(201).send(newUser);
-  } catch (err) {
-    err.message = "User creation error";
-    next(err);
-  }
-});
+  })
+);
 
 router.delete(
   "/:username/pastworkouts/:id",
@@ -106,7 +102,7 @@ router.delete(
       const indexToRemove = currentWorkouts.indexOf(workoutToRemove);
       user.workouts.splice(indexToRemove, 1);
       await user.save();
-      const workoutsObj = user.workouts.toObject();
+      //const workoutsObj = user.workouts.toObject();
       //const updatedWorkouts = workoutsObj.map(removeId);
       res.status(200).send(workoutToRemove);
     } catch (err) {
@@ -147,7 +143,9 @@ router.patch(
       await user.save();
       const workoutsObj = user.workouts.toObject();
       const updatedWorkoutsWithoutId = workoutsObj.map(removeId);
-      const updatedWorkoutsWithoutIsCompleted = updatedWorkoutsWithoutId.map(({isCompleted, ...rest}) => ({...rest}));
+      const updatedWorkoutsWithoutIsCompleted = updatedWorkoutsWithoutId.map(
+        ({ isCompleted, ...rest }) => ({ ...rest })
+      );
       res.send(updatedWorkoutsWithoutIsCompleted);
     } catch (err) {
       err.message = "Unable to add new workout";
