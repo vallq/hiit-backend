@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --runInBand",
+    "testc": "jest --coverage",
     "start": "nodemon src/index.js"
   },
   "repository": {
