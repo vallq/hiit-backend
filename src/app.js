@@ -23,13 +23,14 @@ app.use("/user", userRouter);
 app.get("/", (req, res) => {
   const apiEndpoints = {
     "0": "GET / all API endpoints",
-    "1": "POST /login",
-    "2": "POST /logout",
-    "3": "GET /user returns user details",
-    "4": "GET /user/pastworkouts",
-    "5": "GET /user/pastworkouts/:id",
-    "6": "DELETE /user/pastworkouts/:id",
-    "7": "POST /user/pastworkouts"
+    "1": "POST /register new user",
+    "2": "POST /login",
+    "3": "POST /logout",
+    "4": "GET /user returns user details",
+    "5": "GET /user/pastworkouts",
+    "6": "GET /user/pastworkouts/:id",
+    "7": "DELETE /user/pastworkouts/:id",
+    "8": "POST /user/pastworkouts"
   };
   res.send(apiEndpoints);
 });
@@ -47,18 +48,18 @@ app.post("/login", async (req, res, next) => {
   try {
     const { username, password } = req.body;
     //res.send("hi");
-    ///const user = await User.findOne({ username });
-    const user = {
-      username,
-      password
-    };
-    //const result = await bcrypt.compare(password, user.password);
+    const user = await User.findOne({ username });
+    // const user = {
+    //   username,
+    //   password
+    // };
+    const result = await bcrypt.compare(password, user.password);
 
     //console.log("hi");
 
-    // if (!result) {
-    //   throw new Error("Login Failed");
-    // }
+    if (!result) {
+      throw new Error("Login Failed");
+    }
 
     const token = createJWT(user.username);
     //console.log("token 2 is", token);
