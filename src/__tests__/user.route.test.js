@@ -85,6 +85,19 @@ describe("/user/:username", () => {
     expect(response).toEqual(expectedResponse);
   });
 
+  it("POST / should register a new user", async () => {
+    const expectedUser = {
+      username: "cleric098",
+      password: "iWannaBeNumber1"
+    };
+    const { body: response } = await request(app)
+      .post("/user")
+      .send(expectedUser)
+      .expect(201);
+    expect(response.username).toBe(expectedUser.username);
+    expect(response.password).not.toBe(expectedUser.password);
+  });
+
   it("GET / should return username 'warrior123' and empty workout array", async () => {
     const expectedResponse = {
       username: "warrior123",
@@ -184,7 +197,7 @@ describe("/user/:username", () => {
     const { body: response } = await request(app)
       .patch(`/user/${targetUser}/pastworkouts`)
       .set("Cookie", "token=valid-token")
-      .send(expectedResponse)
+      .send(expectedResponse[1])
       .expect(200);
     expect(jwt.verify).toHaveBeenCalledTimes(1);
     expect(response).toEqual(expectedResponse);
