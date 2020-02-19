@@ -6,13 +6,10 @@ const { removeId } = require("../utils/helperFunctions");
 const WORKOUTS_FIELD = "workouts";
 const returnWorkoutsOnly = `-__v -_id -username -password -${WORKOUTS_FIELD}._id -${WORKOUTS_FIELD}.isCompleted`;
 const returnUsersOnly = `-__v -_id -password -${WORKOUTS_FIELD}._id -${WORKOUTS_FIELD}.isCompleted`;
-const returnTargetUserAndWorkouts =  "-__v -_id -password";
+const returnTargetUserAndWorkouts = "-__v -_id -password";
 
 router.get("/", async (req, res) => {
-  const users = await User.find(
-    {},
-    returnUsersOnly
-  );
+  const users = await User.find({}, returnUsersOnly);
   users.sort();
   res.status(200).send(users);
 });
@@ -25,7 +22,7 @@ router.get("/:username", async (req, res) => {
   // };
   const expectedUser = await User.findOne(
     { username: targetUsername },
-   returnTargetUserAndWorkouts
+    returnUsersOnly
   );
   res.status(200).send(expectedUser);
 });
@@ -77,6 +74,19 @@ router.get("/:username/pastworkouts/:id", async (req, res, next) => {
   }
 });
 
+router.post("/", async (req, res, next) => {
+  try {
+    const userData = req.body;
+    const createNewUser = new User(userData);
+    await User.init();
+    const newUser = await createNewUser.save();
+    res.status(201).send(newUser);
+  } catch (err) {
+    err.message = "User creation error";
+    next(err);
+  }
+});
+
 router.delete(
   "/:username/pastworkouts/:id",
   protectRoute,
@@ -88,21 +98,17 @@ router.delete(
       if (req.user.name !== targetUsername) {
         throw new Error(INCORRECT_ERR);
       }
-      const targetWorkout = await User.findOneAndDelete(
-        { username: targetUsername, "workouts.id": targetId },
-        {
-          projection: {
-            __v: 0,
-            _id: 0,
-            username: 0,
-            password: 0,
-            "workouts._id": 0,
-            "workouts.isCompleted": 0
-          }
-        }
+      const user = await User.findOne({ username: targetUsername });
+      const currentWorkouts = user.workouts;
+      const workoutToRemove = currentWorkouts.find(
+        exercise => (exercise.id = targetId)
       );
-      workout = targetWorkout.workouts[0];
-      res.status(200).send(workout);
+      const indexToRemove = currentWorkouts.indexOf(workoutToRemove);
+      user.workouts.splice(indexToRemove, 1);
+      await user.save();
+      const workoutsObj = user.workouts.toObject();
+      //const updatedWorkouts = workoutsObj.map(removeId);
+      res.status(200).send(workoutToRemove);
     } catch (err) {
       err.messsage = INCORRECT_ERR;
       err.statusCode = 403;
@@ -121,24 +127,28 @@ router.patch(
       if (req.user.name !== targetUsername) {
         throw new Error(INCORRECT_ERR);
       }
-      const workoutToAdd = {
-        id: 2,
-        duration: 15,
-        focus: "core",
-        exercises: [
-          "sit ups",
-          "reverse crunches",
-          "flutter kicks",
-          "russian twists"
-        ]
-      };
-      const { workouts } = await User.findOne(
-        { username: targetUsername },
-        returnWorkoutsOnly,
+      // const workoutToAdd = {
+      //   id: 2,
+      //   duration: 15,
+      //   focus: "core",
+      //   exercises: [
+      //     "sit ups",
+      //     "reverse crunches",
+      //     "flutter kicks",
+      //     "russian twists"
+      //   ]
+      // };
+      const workoutToAdd = req.body;
+      const user = await User.findOne(
+        { username: targetUsername }
+        //returnWorkoutsOnly
       );
-      workouts.push(workoutToAdd);
-      const updatedWorkouts = workouts.toObject().map(removeId);
-      res.send(updatedWorkouts);
+      user.workouts.push(workoutToAdd);
+      await user.save();
+      const workoutsObj = user.workouts.toObject();
+      const updatedWorkoutsWithoutId = workoutsObj.map(removeId);
+      const updatedWorkoutsWithoutIsCompleted = updatedWorkoutsWithoutId.map(({isCompleted, ...rest}) => ({...rest}));
+      res.send(updatedWorkoutsWithoutIsCompleted);
     } catch (err) {
       err.message = "Unable to add new workout";
       next(err);
