@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest --runInBand",
     "testc": "jest --coverage",
-    "start": "nodemon src/index.js"
+    "start": "node src/index.js"
   },
   "repository": {
     "type": "git",
