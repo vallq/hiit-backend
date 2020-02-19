@@ -93,5 +93,24 @@ describe("app", () => {
         .expect(200);
       expect(correctMessage).toEqual("Welcome!");
     });
+
+    it("POST / should return `Login Failed` when password is incorrect", async () => {
+      const wrongPassword = {
+        username: "warrior123",
+        password: "iWannaB3DBest"
+      };
+      const { text: errorMessage } = await request(app)
+        .post("/login")
+        .send(wrongPassword)
+        .expect(400);
+      expect(errorMessage).toBe(`{"error":"Login Failed"}`);
+    });
+
+    it("POST / should return `You are now logged out!` when user goes to /logout", async () => {
+      const { text: message } = await request(app)
+        .post("/logout")
+        .expect(200);
+      expect(message).toBe("You are now logged out!");
+    });
   });
 });
