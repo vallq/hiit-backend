@@ -63,10 +63,6 @@ describe("/user/:username", () => {
   it("GET / should return all users", async () => {
     const expectedResponse = [
       {
-        username: "warrior123",
-        workouts: []
-      },
-      {
         username: "knight567",
         workouts: [
           {
@@ -76,6 +72,10 @@ describe("/user/:username", () => {
             exercises: ["pushups", "planks", "superman", "pull ups"]
           }
         ]
+      },
+      {
+        username: "warrior123",
+        workouts: []
       }
     ];
     const { body: response } = await request(app)
@@ -140,7 +140,7 @@ describe("/user/:username", () => {
     expect(response).toMatchObject(expectedResponse);
   });
 
-  it("DELETE / should return workout that has been deleted", async () => {
+  it("DELETE / should return workout that has been deleted when user is authorised", async () => {
     const targetUser = "knight567";
     const targetId = 1;
     const expectedResponse = {
@@ -149,11 +149,44 @@ describe("/user/:username", () => {
       focus: "upper body",
       exercises: ["pushups", "planks", "superman", "pull ups"]
     };
-    jwt.verify.mockReturnValueOnce({ username: { targetUser } });
+    jwt.verify.mockReturnValueOnce({ name: targetUser });
     const { body: response } = await request(app)
-      .get(`/user/${targetUser}/pastworkouts/${targetId}`)
+      .delete(`/user/${targetUser}/pastworkouts/${targetId}`)
       .set("Cookie", "token=valid-token")
+      .send(expectedResponse)
       .expect(200);
+    expect(jwt.verify).toHaveBeenCalledTimes(1);
     expect(response).toMatchObject(expectedResponse);
+  });
+
+  it("PATCH / should respond with updated workout array", async () => {
+    const targetUser = "knight567";
+    const expectedResponse = [
+      {
+        id: 1,
+        duration: 15,
+        focus: "upper body",
+        exercises: ["pushups", "planks", "superman", "pull ups"]
+      },
+      {
+        id: 2,
+        duration: 15,
+        focus: "core",
+        exercises: [
+          "sit ups",
+          "reverse crunches",
+          "flutter kicks",
+          "russian twists"
+        ]
+      }
+    ];
+    jwt.verify.mockReturnValueOnce({ name: targetUser });
+    const { body: response } = await request(app)
+      .patch(`/user/${targetUser}/pastworkouts`)
+      .set("Cookie", "token=valid-token")
+      .send(expectedResponse)
+      .expect(200);
+    expect(jwt.verify).toHaveBeenCalledTimes(1);
+    expect(response).toEqual(expectedResponse);
   });
 });
