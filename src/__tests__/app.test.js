@@ -66,13 +66,14 @@ describe("app", () => {
   it("GET / should return all API endpoints", async () => {
     const apiEndpoints = {
       "0": "GET / all API endpoints",
-      "1": "POST /login",
-      "2": "POST /logout",
-      "3": "GET /user returns user details",
-      "4": "GET /user/pastworkouts",
-      "5": "GET /user/pastworkouts/:id",
-      "6": "DELETE /user/pastworkouts/:id",
-      "7": "POST /user/pastworkouts"
+      "1": "POST /register new user",
+      "2": "POST /login",
+      "3": "POST /logout",
+      "4": "GET /user returns user details",
+      "5": "GET /user/pastworkouts",
+      "6": "GET /user/pastworkouts/:id",
+      "7": "DELETE /user/pastworkouts/:id",
+      "8": "POST /user/pastworkouts"
     };
     const { body: response } = await request(app)
       .get("/")
