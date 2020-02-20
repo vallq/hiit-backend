@@ -153,6 +153,19 @@ describe("/user/:username", () => {
     expect(response).toMatchObject(expectedResponse);
   });
 
+  it("DELETE / should return `You are not authorized to be here` with error status 401 when user is trying to delete another user's workout", async () => {
+    const targetUser = "knight567";
+    const targetId = 1;
+    const wrongUser = "warrior123";
+    const expectedResponse = { error: "You are not authorized to be here" };
+    jwt.verify.mockReturnValueOnce({ name: wrongUser });
+    const { body: response } = await request(app)
+      .delete(`/user/${targetUser}/pastworkouts/${targetId}`)
+      .set("Cookie", "token=valid-token")
+      .send(expectedResponse)
+      .expect(401);
+  });
+
   it("DELETE / should return workout that has been deleted when user is authorised", async () => {
     const targetUser = "knight567";
     const targetId = 1;
@@ -202,4 +215,29 @@ describe("/user/:username", () => {
     expect(jwt.verify).toHaveBeenCalledTimes(1);
     expect(response).toEqual(expectedResponse);
   });
+
+  it("PATCH / should respond with `You are not authorized to be here` when user is not authorised", async () => {
+    const targetUser = "knight567";
+    const targetId = 1;
+    const wrongUser = "warrior123";
+    const expectedResponse = { error: "You are not authorized to be here" };
+    jwt.verify.mockReturnValueOnce({ name: wrongUser });
+    const { body: response } = await request(app)
+      .patch(`/user/${targetUser}/pastworkouts`)
+      .set("Cookie", "token=valid-token")
+      .send(expectedResponse)
+      .expect(401);
+  });
+
+  // it("PATCH / should respond with `Forbidden: Unable to add new workout`", async () => {
+  //   const targetUser = "knight567";
+  //   const targetId = 1;
+  //   const expectedResponse = { error: "Forbidden: Unable to add new workout" };
+  //   jwt.verify.mockReturnValueOnce({ name: targetUser });
+  //   const { body: response } = await request(app)
+  //     .patch(`/user/${targetUser}/pastworkouts/${targetId}`)
+  //     .set("Cookie", "token=valid-token")
+  //     .send(expectedResponse)
+  //     .expect(403);
+  // });
 });
