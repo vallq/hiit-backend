@@ -15,10 +15,6 @@ router.get("/", async (req, res) => {
 
 router.get("/:username", async (req, res) => {
   const targetUsername = req.params.username;
-  // const expectedUser = {
-  //   username: targetUsername,
-  //   workouts: []
-  // };
   const expectedUser = await User.findOne(
     { username: targetUsername },
     returnUsersOnly
@@ -28,16 +24,6 @@ router.get("/:username", async (req, res) => {
 
 router.get("/:username/pastworkouts", async (req, res) => {
   const targetUsername = req.params.username;
-  // const expectedUserWorkout = {
-  //   workouts: [
-  //     {
-  //      id: 1,
-  //       duration: 15,
-  //       focus: "upper body",
-  //       exercises: ["pushups", "planks", "superman", "pull ups"]
-  //     }
-  //   ]
-  // };
   const expectedUserWorkout = await User.findOne(
     { username: targetUsername },
     returnWorkoutsOnly
@@ -49,13 +35,6 @@ router.get("/:username/pastworkouts/:id", async (req, res, next) => {
   try {
     const targetUsername = req.params.username;
     const targetId = req.params.id;
-    // const expectedUserWorkout = {
-    //        id: 1,
-    //       duration: 15,
-    //       focus: "upper body",
-    //       exercises: ["pushups", "planks", "superman", "pull ups"]
-    // };
-
     const userWorkouts = await User.findOne(
       { username: targetUsername, "workouts.id": targetId },
       returnWorkoutsOnly
@@ -87,7 +66,7 @@ router.delete(
   "/:username/pastworkouts/:id",
   protectRoute,
   async (req, res, next) => {
-    const INCORRECT_ERR = "Incorrect user";
+    const INCORRECT_ERR = "You are not authorized to be here";
     try {
       const targetUsername = req.params.username;
       const targetId = req.params.id;
@@ -102,12 +81,11 @@ router.delete(
       const indexToRemove = currentWorkouts.indexOf(workoutToRemove);
       user.workouts.splice(indexToRemove, 1);
       await user.save();
-      //const workoutsObj = user.workouts.toObject();
-      //const updatedWorkouts = workoutsObj.map(removeId);
       res.status(200).send(workoutToRemove);
     } catch (err) {
-      err.messsage = INCORRECT_ERR;
-      err.statusCode = 403;
+      if (err.message === INCORRECT_ERR) {
+        err.statusCode = 401;
+      }
       next(err);
     }
   }
@@ -123,17 +101,6 @@ router.patch(
       if (req.user.name !== targetUsername) {
         throw new Error(INCORRECT_ERR);
       }
-      // const workoutToAdd = {
-      //   id: 2,
-      //   duration: 15,
-      //   focus: "core",
-      //   exercises: [
-      //     "sit ups",
-      //     "reverse crunches",
-      //     "flutter kicks",
-      //     "russian twists"
-      //   ]
-      // };
       const workoutToAdd = req.body;
       const user = await User.findOne(
         { username: targetUsername }
@@ -148,7 +115,14 @@ router.patch(
       );
       res.send(updatedWorkoutsWithoutIsCompleted);
     } catch (err) {
-      err.message = "Unable to add new workout";
+      if (err.message === INCORRECT_ERR) {
+        err.statusCode = 401;
+      }
+      // } else {
+      //   err.statusCode = 403
+      //   err.message = "Forbidden: Unable to add new workout";
+      // }
+
       next(err);
     }
   }
