@@ -13,8 +13,7 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
-    index: true, // helps us to find by username,
-    //note that this has a significant production impact
+    index: true, 
     unique: true,
     minlength: 3,
     lowercase: true
