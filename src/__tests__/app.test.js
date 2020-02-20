@@ -54,8 +54,6 @@ describe("app", () => {
       }
     ];
     await User.create(userData);
-    // jest.spyOn(console, "error");
-    // console.error.mockReturnValue(() => {});
   });
 
   afterEach(async () => {
