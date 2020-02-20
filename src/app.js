@@ -37,32 +37,23 @@ app.get("/", (req, res) => {
 
 const createJWT = username => {
   const payload = { name: username };
-  //console.log("secret key is" + process.env.JWT_SECRET_KEY);
-  //console.log("payload is", payload);
   const token = jwt.sign(payload, process.env.JWT_SECRET_KEY);
-  //console.log("Token is", token);
   return token;
 };
 
 app.post("/login", async (req, res, next) => {
   try {
+    
     const { username, password } = req.body;
-    //res.send("hi");
+    
     const user = await User.findOne({ username });
-    // const user = {
-    //   username,
-    //   password
-    // };
     const result = await bcrypt.compare(password, user.password);
-
-    //console.log("hi");
 
     if (!result) {
       throw new Error("Login Failed");
     }
 
     const token = createJWT(user.username);
-    //console.log("token 2 is", token);
 
     const oneDay = 24 * 60 * 60 * 1000;
     const oneWeek = oneDay * 7;
@@ -74,7 +65,7 @@ app.post("/login", async (req, res, next) => {
 
     res.send("Welcome!");
   } catch (err) {
-    if (err.message === "Login Failed") {
+    if (err.message === "Login Failed" || err.message === "No login credentials given") {
       err.statusCode = 400;
     }
     next(err);
