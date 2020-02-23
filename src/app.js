@@ -7,11 +7,15 @@ const bcrypt = require("bcryptjs");
 const User = require("./models/user.model");
 require("dotenv").config();
 const userRouter = require("./routes/user.route");
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://hiit-generator.netlify.com"
+];
 
 const corsOptions = {
   credentials: true,
   allowedHeaders: "content-type",
-  origin: "http://localhost:3001"
+  origin: "http://localhost:3000"
 };
 
 app.use(cors(corsOptions));
@@ -43,9 +47,8 @@ const createJWT = username => {
 
 app.post("/login", async (req, res, next) => {
   try {
-    
     const { username, password } = req.body;
-    
+
     const user = await User.findOne({ username });
     const result = await bcrypt.compare(password, user.password);
 
@@ -65,7 +68,10 @@ app.post("/login", async (req, res, next) => {
 
     res.send("Welcome!");
   } catch (err) {
-    if (err.message === "Login Failed" || err.message === "No login credentials given") {
+    if (
+      err.message === "Login Failed" ||
+      err.message === "No login credentials given"
+    ) {
       err.statusCode = 400;
     }
     next(err);
