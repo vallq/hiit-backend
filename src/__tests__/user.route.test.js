@@ -12,7 +12,7 @@ mongoose.set("useUnifiedTopology", true);
 mongoose.set("useCreateIndex", true);
 mongoose.set("useFindAndModify", true);
 
-describe("/user/:username", () => {
+describe("/user", () => {
   let mongoServer;
   beforeAll(async () => {
     try {
@@ -81,8 +81,40 @@ describe("/user/:username", () => {
     const { body: response } = await request(app)
       .get("/user")
       .expect(200);
-    //response.sort((a, b) => a.id > b.id);
     expect(response).toEqual(expectedResponse);
+  });
+
+  describe("/login", () => {
+    it("POST / should return `Welcome!` when user is authenticated and valid", async () => {
+      const expectedUser = {
+        username: "warrior123",
+        password: "iWannaB3DVeryBest"
+      };
+      const { text: correctMessage } = await request(app)
+        .post("/user/login")
+        .send(expectedUser)
+        .expect(200);
+      expect(correctMessage).toEqual("Welcome!");
+    });
+
+    it("POST / should return `Login Failed` when password is incorrect", async () => {
+      const wrongPassword = {
+        username: "warrior123",
+        password: "iWannaB3DBest"
+      };
+      const { text: errorMessage } = await request(app)
+        .post("/user/login")
+        .send(wrongPassword)
+        .expect(401);
+      expect(errorMessage).toBe(`{"error":"Login Failed"}`);
+    });
+
+    it("POST / should return `You are now logged out!` when user goes to /logout", async () => {
+      const { text: message } = await request(app)
+        .post("/user/logout")
+        .expect(200);
+      expect(message).toBe("You are now logged out!");
+    });
   });
 
   it("POST / should register a new user", async () => {
@@ -146,24 +178,25 @@ describe("/user/:username", () => {
     const targetUser = "warrior123";
     const targetId = 1;
     const expectedResponse = { error: "Workout not found" };
-    //const expectedResponse = `${targetUser} has no such workout!`;
     const { body: response } = await request(app)
       .get(`/user/${targetUser}/pastworkouts/${targetId}`)
-      .expect(400);
+      .expect(404);
     expect(response).toMatchObject(expectedResponse);
   });
 
-  it("DELETE / should return `You are not authorized to be here` with error status 401 when user is trying to delete another user's workout", async () => {
+  it("DELETE / should return `Forbidden: You are not authorized to perform this action` with error status 401 when user is trying to delete another user's workout", async () => {
     const targetUser = "knight567";
     const targetId = 1;
     const wrongUser = "warrior123";
-    const expectedResponse = { error: "You are not authorized to be here" };
+    const expectedResponse = {
+      error: "Forbidden: You are not authorized to perform this action"
+    };
     jwt.verify.mockReturnValueOnce({ name: wrongUser });
     const { body: response } = await request(app)
       .delete(`/user/${targetUser}/pastworkouts/${targetId}`)
       .set("Cookie", "token=valid-token")
       .send(expectedResponse)
-      .expect(401);
+      .expect(403);
   });
 
   it("DELETE / should return workout that has been deleted when user is authorised", async () => {
@@ -185,7 +218,7 @@ describe("/user/:username", () => {
     expect(response).toMatchObject(expectedResponse);
   });
 
-  it("PATCH / should respond with updated workout array", async () => {
+  it("POST / should respond with updated workout array", async () => {
     const targetUser = "knight567";
     const expectedResponse = [
       {
@@ -208,7 +241,7 @@ describe("/user/:username", () => {
     ];
     jwt.verify.mockReturnValueOnce({ name: targetUser });
     const { body: response } = await request(app)
-      .patch(`/user/${targetUser}/pastworkouts`)
+      .post(`/user/${targetUser}/pastworkouts`)
       .set("Cookie", "token=valid-token")
       .send(expectedResponse[1])
       .expect(200);
@@ -216,28 +249,18 @@ describe("/user/:username", () => {
     expect(response).toEqual(expectedResponse);
   });
 
-  it("PATCH / should respond with `You are not authorized to be here` when user is not authorised", async () => {
+  it("POST / should respond with `Forbidden: You are not authorized to perform this action` when user is not authorised", async () => {
     const targetUser = "knight567";
     const targetId = 1;
     const wrongUser = "warrior123";
-    const expectedResponse = { error: "You are not authorized to be here" };
+    const expectedResponse = {
+      error: "Forbidden: You are not authorized to perform this action"
+    };
     jwt.verify.mockReturnValueOnce({ name: wrongUser });
     const { body: response } = await request(app)
-      .patch(`/user/${targetUser}/pastworkouts`)
+      .post(`/user/${targetUser}/pastworkouts`)
       .set("Cookie", "token=valid-token")
       .send(expectedResponse)
-      .expect(401);
+      .expect(403);
   });
-
-  // it("PATCH / should respond with `Forbidden: Unable to add new workout`", async () => {
-  //   const targetUser = "knight567";
-  //   const targetId = 1;
-  //   const expectedResponse = { error: "Forbidden: Unable to add new workout" };
-  //   jwt.verify.mockReturnValueOnce({ name: targetUser });
-  //   const { body: response } = await request(app)
-  //     .patch(`/user/${targetUser}/pastworkouts/${targetId}`)
-  //     .set("Cookie", "token=valid-token")
-  //     .send(expectedResponse)
-  //     .expect(403);
-  // });
 });
