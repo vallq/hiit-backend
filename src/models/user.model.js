@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
-    index: true, 
+    index: true,
     unique: true,
     minlength: 3,
     lowercase: true
@@ -27,9 +27,11 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre("save", async function(next) {
-  const rounds = 10;
-  this.password = await bcrypt.hash(this.password, rounds);
-  next();
+  if (this.isModified("password")) {
+    const rounds = 10;
+    this.password = await bcrypt.hash(this.password, rounds);
+    next();
+  }
 });
 
 const User = mongoose.model("User", userSchema);
