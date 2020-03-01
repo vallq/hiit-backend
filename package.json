@@ -6,7 +6,6 @@
   "scripts": {
     "test": "jest",
     "testc": "jest --coverage",
-    "lint": "eslint --init",
     "start": "node src/index.js"
   },
   "repository": {
@@ -38,5 +37,8 @@
   },
   "jest": {
     "testEnvironment": "node"
+  },
+  "env": {
+    "jest": true
   }
 }
