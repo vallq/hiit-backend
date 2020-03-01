@@ -5,7 +5,11 @@
     "es6": true,
     "jest": true
   },
-  "extends": ["plugin:react/recommended", "standard"],
+  "extends": [
+    "plugin:react/recommended",
+    "standard",
+    "plugin:prettier/recommended"
+  ],
   "globals": {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
@@ -16,6 +20,6 @@
     },
     "ecmaVersion": 2018
   },
-  "plugins": ["react"],
+  "plugins": ["react", "prettier"],
   "rules": {}
 }
