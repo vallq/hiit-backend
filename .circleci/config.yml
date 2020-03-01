@@ -18,6 +18,9 @@ jobs:
       - run:
           name: "test cover"
           command: npm run testc
+      - run:
+          name: "lint"
+          command: npm run lint
   deploy:
     docker:
       - image: buildpack-deps:trusty
