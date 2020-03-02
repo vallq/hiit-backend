@@ -197,6 +197,7 @@ describe("/user", () => {
       .set("Cookie", "token=valid-token")
       .send(expectedResponse)
       .expect(403);
+    expect(response).toEqual(expectedResponse);
   });
 
   it("DELETE / should return workout that has been deleted when user is authorised", async () => {
@@ -251,7 +252,6 @@ describe("/user", () => {
 
   it("POST / should respond with `Forbidden: You are not authorized to perform this action` when user is not authorised", async () => {
     const targetUser = "knight567";
-    const targetId = 1;
     const wrongUser = "warrior123";
     const expectedResponse = {
       error: "Forbidden: You are not authorized to perform this action"
@@ -262,5 +262,6 @@ describe("/user", () => {
       .set("Cookie", "token=valid-token")
       .send(expectedResponse)
       .expect(403);
+    expect(response).toEqual(expectedResponse);
   });
 });

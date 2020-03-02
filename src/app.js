@@ -1,11 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const bcrypt = require("bcryptjs");
-const User = require("./models/user.model");
 const userRouter = require("./routes/user.route");
 const { wrapAsync } = require("./utils/helperFunctions");
 

@@ -9,7 +9,7 @@ const protectRoute = (req, res, next) => {
     next();
   } catch (err) {
     err.statusCode = 401;
-    err.message = "You are not authorized to be here!"
+    err.message = "You are not authorized to be here!";
     next(err);
   }
 };

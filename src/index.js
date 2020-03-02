@@ -3,11 +3,11 @@ require("./utils/db");
 const PORT = 3000;
 const app = require("./app");
 
-const server = app.listen(process.env.PORT || PORT, () => {
+app.listen(process.env.PORT || PORT, () => {
   console.log(`Express app started on http://localhost:${PORT}`);
 });
 
-//Seed Database
+// Seed Database
 // const User = require("./models/user.model");
 // const userData = [
 //   {

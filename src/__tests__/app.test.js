@@ -3,7 +3,6 @@ const request = require("supertest");
 const mongoose = require("mongoose");
 const User = require("../models/user.model");
 const { MongoMemoryServer } = require("mongodb-memory-server");
-const jwt = require("jsonwebtoken");
 
 jest.mock("jsonwebtoken");
 
